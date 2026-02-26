@@ -41,11 +41,48 @@ const Home = () => {
             </div>
           </div>
           <InputWithIcon
-            icon={<ClipboardDocumentIcon className="h-5 w-5 text-[#7d838e]" />}
+            icon={<ClipboardDocumentIcon className="h-5 w-5 text-white" />}
             iconPosition="right"
             className="border-[#7d838e] h-[55px] bg-[#181826] pl-4"
             placeholder="Cole o link do YouTuibe aqui..."
           />
+           <div className="mt-2">
+            <p className="text-[#7d838e] text-sm mb-2">
+              Selecione a qualidade:
+            </p>
+            <RadioGroup defaultValue="128" className="flex gap-6">
+                <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="128"
+                  id="q1"
+                  className="border-[#7d838e] text-[#c1356e]"
+                />
+                <Label htmlFor="q1" className="text-white">
+                  128 kbps
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="192"
+                  id="q2"
+                  className="border-[#7d838e] text-[#c1356e]"
+                />
+                <Label htmlFor="q2" className="text-white">
+                  192 kbps
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="320"
+                  id="q3"
+                  className="border-[#7d838e] text-[#c1356e]"
+                />
+                <Label htmlFor="q3" className="text-white">
+                 320 kbps
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
           <Button className="w-[390px] h-[55px] bg-[#c1356e] hover:bg-[#a02d5c] transition-colors duration-200 flex items-center justify-center">
             <ArrowDownTrayIcon className="text-white" />
             <p className="text-[20px]">Baixar MP3</p>
@@ -66,7 +103,7 @@ const Home = () => {
             </div>
           </div>
           <InputWithIcon
-            icon={<ClipboardDocumentIcon className="h-5 w-5 text-[#7d838e]" />}
+            icon={<ClipboardDocumentIcon className="h-5 w-5 text-white" />}
             iconPosition="right"
             className="border-[#7d838e] h-[55px] bg-[#181826] pl-4"
             placeholder="Cole o link do YouTuibe aqui..."
