@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+echo "server/yt-env/" >> .gitignore
+echo ".env" >> .gitignore
+echo "*.env" >> .gitignore
