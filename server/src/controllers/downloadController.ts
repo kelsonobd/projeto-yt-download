@@ -7,6 +7,9 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 const DOWNLOADS_DIR = path.join(__dirname, '../../downloads');
 
+// Caminho para o binário do yt-dlp no ambiente virtual
+const YT_DLP_PATH = path.join(__dirname, '../../yt-env/bin/yt-dlp');
+
 // Garantir que a pasta existe
 if (!fs.existsSync(DOWNLOADS_DIR)) {
   fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
@@ -32,7 +35,7 @@ export const downloadVideo = async (req: Request, res: Response) => {
         '320': '320K'
       };
       const audioQuality = qualityMap[quality] || '128K';
-      command = `yt-dlp -x --audio-format mp3 --audio-quality ${audioQuality} -o "${outputTemplate}" "${url}"`;
+      command = `${YT_DLP_PATH} --impersonate chrome -x --audio-format mp3 --audio-quality ${audioQuality} -o "${outputTemplate}" "${url}"`;
     } else {
       const formatMap: Record<string, string> = {
         '360': 'best[height<=360]',
@@ -41,13 +44,14 @@ export const downloadVideo = async (req: Request, res: Response) => {
         '4k': 'best[height<=2160]'
       };
       const format = formatMap[quality] || 'best[height<=720]';
-      command = `yt-dlp -f "${format}" --merge-output-format mp4 -o "${outputTemplate}" "${url}"`;
+      command = `${YT_DLP_PATH} --impersonate chrome -f "${format}" --merge-output-format mp4 -o "${outputTemplate}" "${url}"`;
     }
 
-    console.log('🎬 Executando:', command);
-    const { stdout, stderr } = await execAsync(command);
+    const { stderr } = await execAsync(command);
     
-    if (stderr) console.error('⚠️ stderr:', stderr);
+    if (stderr) console.error('⚠️ yt-dlp stderr:', stderr);
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const files = fs.readdirSync(DOWNLOADS_DIR);
     const extension = type === 'audio' ? '.mp3' : '.mp4';
@@ -57,21 +61,37 @@ export const downloadVideo = async (req: Request, res: Response) => {
       .find(f => f.includes(timestamp.toString()) && f.endsWith(extension));
 
     if (downloadedFile && fs.existsSync(downloadedFile)) {
-      const title = path.basename(downloadedFile).replace(`_${timestamp}`, '');
+      const rawFilename = path.basename(downloadedFile);
+      const videoTitle = rawFilename.replace(`_${timestamp}`, '').replace(/\.[^/.]+$/, '');
+      const finalFilename = `${videoTitle}${extension}`;
       
-      res.download(downloadedFile, title, (err) => {
-        if (err) console.error('❌ Erro ao enviar:', err);
-        setTimeout(() => {
-          fs.unlink(downloadedFile, () => {});
-          console.log('🧹 Arquivo removido:', downloadedFile);
-        }, 5 * 60 * 1000);
+      const fileBuffer = fs.readFileSync(downloadedFile);
+      const encodedFilename = encodeURIComponent(finalFilename).replace(/['()]/g, escape);
+      
+      res.writeHead(200, {
+        'Content-Disposition': `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,
+        'Content-Type': type === 'audio' ? 'audio/mpeg' : 'video/mp4',
+        'Content-Length': fileBuffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Access-Control-Expose-Headers': 'Content-Disposition'
       });
+      
+      res.end(fileBuffer);
+      
+      setTimeout(() => {
+        if (fs.existsSync(downloadedFile)) {
+          fs.unlink(downloadedFile, () => {});
+        }
+      }, 5 * 60 * 1000);
+      
     } else {
-      throw new Error('Arquivo não encontrado após download');
+      res.status(500).json({ error: 'Arquivo não encontrado após download' });
     }
 
   } catch (error) {
-    console.error('❌ Erro:', error);
+    console.error('❌ Erro no download:', error);
     res.status(500).json({ 
       error: 'Falha ao processar download',
       details: error instanceof Error ? error.message : 'Erro desconhecido'

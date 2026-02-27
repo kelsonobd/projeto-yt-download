@@ -1,0 +1,2 @@
+const cookiesPath = path.join(__dirname, '../../cookies.txt');
+const command = `yt-dlp --cookies "${cookiesPath}" -x --audio-format mp3 --audio-quality ${audioQuality} -o "${outputTemplate}" "${url}"`;

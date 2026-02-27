@@ -3,17 +3,21 @@ import { cn } from "@/lib/utils";
 
 interface InputWithIconProps extends React.ComponentProps<"input"> {
   icon: React.ReactNode;
-  iconPosition?: "left" | "right";  // nova prop
+  iconPosition?: "left" | "right";
+  onIconClick?: () => void;  
 }
 
 const InputWithIcon = React.forwardRef<HTMLInputElement, InputWithIconProps>(
-  ({ className, type, icon, iconPosition = "left", ...props }, ref) => {
+  ({ className, type, icon, iconPosition = "left", onIconClick, ...props }, ref) => {
     const paddingClass = iconPosition === "left" ? "pl-10" : "pr-10";
     const iconPositionClass = iconPosition === "left" ? "left-3" : "right-3";
     
     return (
       <div className="relative w-full">
-        <div className={`absolute ${iconPositionClass} top-1/2 -translate-y-1/2 text-gray-400`}>
+        <div 
+          className={`absolute ${iconPositionClass} top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-300 transition-colors`}
+          onClick={onIconClick}
+        >
           {icon}
         </div>
         <input
