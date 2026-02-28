@@ -7,10 +7,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependências
 node_modules
+server/yt-env/
 dist
 dist-ssr
-*.local
+
+# Arquivos de ambiente
+.env
+*.env
+.env.local
+.env.*.local
+
+# Downloads (opcional - se não quiser versionar os downloads)
+downloads/
+server/downloads/
+*.mp3
+*.mp4
+*.webm
 
 # Editor directories and files
 .vscode/*
@@ -23,6 +37,6 @@ dist-ssr
 *.sln
 *.sw?
 
-echo "server/yt-env/" >> .gitignore
-echo ".env" >> .gitignore
-echo "*.env" >> .gitignoreserver/yt-env/lib/python3.12/site-packages/yt_dlp/extractor/shahid.py
+# Sistema
+Thumbs.db
+desktop.ini

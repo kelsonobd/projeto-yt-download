@@ -7,10 +7,10 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 const DOWNLOADS_DIR = path.join(__dirname, '../../downloads');
 
-// Caminho para o binário do yt-dlp no ambiente virtual
-const YT_DLP_PATH = path.join(__dirname, '../../yt-env/bin/yt-dlp');
+// ✅ ALTERADO: Agora usa o yt-dlp do sistema (que já instalamos com apt)
+const YT_DLP_PATH = 'yt-dlp';
 
-// Garantir que a pasta existe
+// Garantir que a pasta de downloads existe
 if (!fs.existsSync(DOWNLOADS_DIR)) {
   fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 }
@@ -47,12 +47,16 @@ export const downloadVideo = async (req: Request, res: Response) => {
       command = `${YT_DLP_PATH} --impersonate chrome -f "${format}" --merge-output-format mp4 -o "${outputTemplate}" "${url}"`;
     }
 
+    console.log('📥 Executando comando:', command);
+    
     const { stderr } = await execAsync(command);
     
     if (stderr) console.error('⚠️ yt-dlp stderr:', stderr);
 
+    // Aguarda um momento para o arquivo ser escrito
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    // Procura o arquivo baixado
     const files = fs.readdirSync(DOWNLOADS_DIR);
     const extension = type === 'audio' ? '.mp3' : '.mp4';
     
@@ -68,6 +72,7 @@ export const downloadVideo = async (req: Request, res: Response) => {
       const fileBuffer = fs.readFileSync(downloadedFile);
       const encodedFilename = encodeURIComponent(finalFilename).replace(/['()]/g, escape);
       
+      // Envia o arquivo
       res.writeHead(200, {
         'Content-Disposition': `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,
         'Content-Type': type === 'audio' ? 'audio/mpeg' : 'video/mp4',
@@ -80,6 +85,7 @@ export const downloadVideo = async (req: Request, res: Response) => {
       
       res.end(fileBuffer);
       
+      // Remove o arquivo após 5 minutos
       setTimeout(() => {
         if (fs.existsSync(downloadedFile)) {
           fs.unlink(downloadedFile, () => {});
